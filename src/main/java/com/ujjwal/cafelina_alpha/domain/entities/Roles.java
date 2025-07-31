@@ -25,10 +25,11 @@ public class Roles {
     @Enumerated(EnumType.STRING)
     private RoleList roleName;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private RolePermissions rolePermissions;
-
     @ManyToMany(mappedBy = "roles")
     private Set<Users> users = new HashSet<>();
+
+    public Roles(RoleList roleName, Set<Users> users) {
+        this.roleName = roleName;
+        this.users = users;
+    }
 }
