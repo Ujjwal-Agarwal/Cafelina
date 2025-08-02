@@ -11,35 +11,39 @@ import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
 import com.ujjwal.cafelina_alpha.security.JWTService;
 import com.ujjwal.cafelina_alpha.security.UserPrincipal;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
 import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JWTService jwtService;
+//    @Autowired
+    private final AuthenticationManager authenticationManager;
+//    @Autowired
+    private final UserRepository userRepository;
+//    @Autowired
+    private final RoleRepository roleRepository;
+//    @Autowired
+    private final PasswordEncoder passwordEncoder;
+//    @Autowired
+    private final JWTService jwtService;
+
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JWTService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -64,14 +68,14 @@ public class AuthController {
         }
         Users user = Users.builder()
                 .username(signUpRequest.getUsername())
-                .userEmail(signUpRequest.getEmail())
+                .email(signUpRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(signUpRequest.getPassword()))
                 .build();
 
         Roles userRole = roleRepository.findByRoleName(RoleList.USER)
                 .orElseThrow(()-> new RuntimeException("User Role not Set"));
 
-        user.setRolesList(Collections.singleton(userRole));
+        user.setRoles(Collections.singleton(userRole));
         Users result = userRepository.save(user);
 
         return ResponseEntity.ok(new ApiResponse(true,"User registered successfully"));

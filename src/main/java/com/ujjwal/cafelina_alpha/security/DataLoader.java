@@ -12,8 +12,12 @@ import java.util.HashSet;
 
 @Component
 public class DataLoader implements ApplicationRunner {
-    @Autowired
-    private RoleRepository roleRepository;
+//    @Autowired
+    private final RoleRepository roleRepository;
+
+    public DataLoader(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository; // Construvctor Injection
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {

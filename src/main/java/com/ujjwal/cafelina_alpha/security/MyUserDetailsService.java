@@ -18,8 +18,12 @@ import java.util.Optional;
 @Service
 @Transactional
 public class MyUserDetailsService implements UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
+//    @Autowired
+    private final UserRepository userRepository;
+
+    public MyUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

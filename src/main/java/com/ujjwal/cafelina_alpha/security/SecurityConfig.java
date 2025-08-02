@@ -19,8 +19,15 @@ import org.springframework.stereotype.Component;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig{
-    @Autowired private CustomJwtAuthenticationConverter jwtAuthenticationConverter;
-    @Autowired private JWTAuthenticationFilter jwtAuthFilter;
+//    @Autowired
+    private final CustomJwtAuthenticationConverter jwtAuthenticationConverter;
+//    @Autowired
+    private final JWTAuthenticationFilter jwtAuthFilter;
+
+    public SecurityConfig(JWTAuthenticationFilter jwtAuthFilter, CustomJwtAuthenticationConverter jwtAuthenticationConverter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+    }
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
