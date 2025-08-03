@@ -5,15 +5,15 @@ import com.ujjwal.cafelina_alpha.domain.RolePermissions;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Entity
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Roles {
     @Id
@@ -21,15 +21,17 @@ public class Roles {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Getter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleList roleName;
 
     @ManyToMany(mappedBy = "roles")
-    private Set<Users> users = new HashSet<>();
+    private Set<Users> users = ConcurrentHashMap.newKeySet();
 
     public Roles(RoleList roleName, Set<Users> users) {
         this.roleName = roleName;
-        this.users = users;
+        this.users.addAll(users);
     }
+
 }

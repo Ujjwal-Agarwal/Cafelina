@@ -1,6 +1,7 @@
 package com.ujjwal.cafelina_alpha.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ujjwal.cafelina_alpha.domain.RoleList;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,9 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Entity
 @AllArgsConstructor
@@ -35,12 +35,25 @@ public class Users {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Roles> roles = new HashSet<>();
+    private Set<Roles> roles = ConcurrentHashMap.newKeySet();
 
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
+    }
+
+    public Set<Roles> getRoles(){
+        return new HashSet<>(roles);
+    }
+
+    public void setRoles(List<Roles> list){
+        if(this.roles == null){this.roles = ConcurrentHashMap.newKeySet();}
+        if(list.isEmpty()){ return; }
+        final Object rolesLock = new Object();
+        synchronized (rolesLock) {
+            this.roles.add(list.getFirst());
+        }
     }
 }

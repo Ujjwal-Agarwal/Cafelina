@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.HashSet;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -47,6 +48,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -75,7 +77,7 @@ public class AuthController {
         Roles userRole = roleRepository.findByRoleName(RoleList.USER)
                 .orElseThrow(()-> new RuntimeException("User Role not Set"));
 
-        user.setRoles(Collections.singleton(userRole));
+        user.setRoles(Collections.singletonList(userRole));
         Users result = userRepository.save(user);
 
         return ResponseEntity.ok(new ApiResponse(true,"User registered successfully"));
