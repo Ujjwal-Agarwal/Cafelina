@@ -11,6 +11,7 @@ import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
 import com.ujjwal.cafelina_alpha.security.JWTService;
 import com.ujjwal.cafelina_alpha.security.UserPrincipal;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,13 +49,18 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication;
+        try{
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false,"Invalid username or password"));
+        }
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         String jwt = jwtService.generateToken(userPrincipal);
         return ResponseEntity.ok(new JwtResponse(jwt,userPrincipal.getUsername()));
@@ -68,18 +74,21 @@ public class AuthController {
         if(userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new ApiResponse(false,"Email is already in use!"));
         }
-        Users user = Users.builder()
-                .username(signUpRequest.getUsername())
-                .email(signUpRequest.getEmail())
-                .passwordHash(passwordEncoder.encode(signUpRequest.getPassword()))
-                .build();
+        try{
+            Users user = Users.builder()
+                    .username(signUpRequest.getUsername())
+                    .email(signUpRequest.getEmail())
+                    .passwordHash(passwordEncoder.encode(signUpRequest.getPassword()))
+                    .build();
 
-        Roles userRole = roleRepository.findByRoleName(RoleList.USER)
-                .orElseThrow(()-> new RuntimeException("User Role not Set"));
+            Roles userRole = roleRepository.findByRoleName(RoleList.USER)
+                    .orElseThrow(()-> new RuntimeException("User Role not Set"));
 
-        user.setRoles(Collections.singletonList(userRole));
-        Users result = userRepository.save(user);
-
+            user.setRoles(Collections.singletonList(userRole));
+            Users result = userRepository.save(user);
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse(false,"Sign Up Failed"));
+        }
         return ResponseEntity.ok(new ApiResponse(true,"User registered successfully"));
     }
 }
