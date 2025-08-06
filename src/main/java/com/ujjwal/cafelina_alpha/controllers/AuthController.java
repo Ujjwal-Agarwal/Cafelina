@@ -11,6 +11,8 @@ import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
 import com.ujjwal.cafelina_alpha.security.JWTService;
 import com.ujjwal.cafelina_alpha.security.UserPrincipal;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authentication;
         try{
             authentication = authenticationManager.authenticate(
@@ -63,7 +65,14 @@ public class AuthController {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         String jwt = jwtService.generateToken(userPrincipal);
-        return ResponseEntity.ok(new JwtResponse(jwt,userPrincipal.getUsername()));
+        Cookie cookie = new Cookie("sessionToken", jwt);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60);
+
+        response.addCookie(cookie);
+        return ResponseEntity.ok(new ApiResponse(true,"Successfully logged in"));
     }
 
     @PostMapping("/signup")
