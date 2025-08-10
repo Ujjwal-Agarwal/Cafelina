@@ -11,6 +11,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,5 +132,11 @@ public class JWTService {
                 null,
                 userDetails.getAuthorities()
         );
+    }
+    public UserPrincipal getUserPrincipalFromToken(String token) {
+        String username = extractUsername(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        return (UserPrincipal) userDetails;
+
     }
 }

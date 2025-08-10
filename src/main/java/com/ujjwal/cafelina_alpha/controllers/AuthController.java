@@ -12,17 +12,16 @@ import com.ujjwal.cafelina_alpha.repository.UserRepository;
 import com.ujjwal.cafelina_alpha.security.JWTService;
 import com.ujjwal.cafelina_alpha.security.UserPrincipal;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,7 +35,7 @@ public class AuthController {
     private final UserRepository userRepository;
 //    @Autowired
     private final RoleRepository roleRepository;
-//    @Autowired
+//    @Autowired‚‚‚
     private final PasswordEncoder passwordEncoder;
 //    @Autowired
     private final JWTService jwtService;
@@ -49,7 +48,29 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping("/signin")
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request){
+        String token = extractTokenFromCookie(request);
+        if(token != null && jwtService.validateToken(token)) {
+            UserPrincipal userPrincipal = jwtService.getUserPrincipalFromToken(token);
+            return ResponseEntity.ok(userPrincipal);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for (Cookie cookie : cookies) {
+                if("sessionToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         Authentication authentication;
         try{
@@ -73,6 +94,17 @@ public class AuthController {
 
         response.addCookie(cookie);
         return ResponseEntity.ok(new ApiResponse(true,"Successfully logged in"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("sessionToken", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(new ApiResponse(true,"Successfully logged out"));
     }
 
     @PostMapping("/signup")
@@ -100,4 +132,6 @@ public class AuthController {
         }
         return ResponseEntity.ok(new ApiResponse(true,"User registered successfully"));
     }
+
+
 }
