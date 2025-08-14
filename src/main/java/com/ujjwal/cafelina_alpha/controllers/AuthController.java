@@ -1,5 +1,6 @@
 package com.ujjwal.cafelina_alpha.controllers;
 
+import com.resend.core.exception.ResendException;
 import com.ujjwal.cafelina_alpha.domain.AuthProviders;
 import com.ujjwal.cafelina_alpha.domain.RoleList;
 import com.ujjwal.cafelina_alpha.domain.dtos.authenticationDto.ApiResponse;
@@ -11,6 +12,7 @@ import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
 import com.ujjwal.cafelina_alpha.security.services.JWTService;
 import com.ujjwal.cafelina_alpha.security.entities.UserPrincipal;
+import com.ujjwal.cafelina_alpha.services.EmailService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,12 +41,15 @@ public class AuthController {
 //    @Autowired
     private final JWTService jwtService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JWTService jwtService) {
+    private final EmailService emailService;
+
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JWTService jwtService, EmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/me")
@@ -70,7 +75,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) throws ResendException {
         Authentication authentication;
         try{
             authentication = authenticationManager.authenticate(
@@ -90,7 +95,7 @@ public class AuthController {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(24 * 60 * 60);
-
+        emailService.sendEmail();
         response.addCookie(cookie);
         return ResponseEntity.ok(new ApiResponse(true,"Successfully logged in"));
     }
@@ -120,6 +125,7 @@ public class AuthController {
                     .email(signUpRequest.getEmail())
                     .passwordHash(passwordEncoder.encode(signUpRequest.getPassword()))
                     .authProviders(AuthProviders.LOCAL)
+                    .isEmailVerified(false)
                     .build();
 
             Roles userRole = roleRepository.findByRoleName(RoleList.USER)

@@ -44,6 +44,9 @@ public class Users {
 
     private String imageUrl;
 
+    @Column(nullable = false)
+    private Boolean isEmailVerified = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Roles> roles = ConcurrentHashMap.newKeySet();
