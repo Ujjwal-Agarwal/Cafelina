@@ -6,6 +6,9 @@ import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -20,6 +23,7 @@ public class DataLoader implements ApplicationRunner {
     }
 
     @Override
+//    @EventListener(ApplicationReadyEvent.class)
     public void run(ApplicationArguments args) throws Exception {
         if(roleRepository.findByRoleName(RoleList.USER).isEmpty()) {
             roleRepository.save(new Roles(RoleList.USER,new HashSet<>()));

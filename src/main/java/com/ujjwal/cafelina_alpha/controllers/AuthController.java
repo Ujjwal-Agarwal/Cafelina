@@ -1,20 +1,19 @@
 package com.ujjwal.cafelina_alpha.controllers;
 
+import com.ujjwal.cafelina_alpha.domain.AuthProviders;
 import com.ujjwal.cafelina_alpha.domain.RoleList;
 import com.ujjwal.cafelina_alpha.domain.dtos.authenticationDto.ApiResponse;
-import com.ujjwal.cafelina_alpha.domain.dtos.authenticationDto.JwtResponse;
 import com.ujjwal.cafelina_alpha.domain.dtos.authenticationDto.LoginRequest;
 import com.ujjwal.cafelina_alpha.domain.dtos.authenticationDto.SignUpRequest;
 import com.ujjwal.cafelina_alpha.domain.entities.Roles;
 import com.ujjwal.cafelina_alpha.domain.entities.Users;
 import com.ujjwal.cafelina_alpha.repository.RoleRepository;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
-import com.ujjwal.cafelina_alpha.security.JWTService;
-import com.ujjwal.cafelina_alpha.security.UserPrincipal;
+import com.ujjwal.cafelina_alpha.security.services.JWTService;
+import com.ujjwal.cafelina_alpha.security.entities.UserPrincipal;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -120,6 +119,7 @@ public class AuthController {
                     .username(signUpRequest.getUsername())
                     .email(signUpRequest.getEmail())
                     .passwordHash(passwordEncoder.encode(signUpRequest.getPassword()))
+                    .authProviders(AuthProviders.LOCAL)
                     .build();
 
             Roles userRole = roleRepository.findByRoleName(RoleList.USER)
@@ -132,6 +132,4 @@ public class AuthController {
         }
         return ResponseEntity.ok(new ApiResponse(true,"User registered successfully"));
     }
-
-
 }

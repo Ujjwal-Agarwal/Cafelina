@@ -1,7 +1,7 @@
 package com.ujjwal.cafelina_alpha.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ujjwal.cafelina_alpha.domain.RoleList;
+import com.ujjwal.cafelina_alpha.domain.AuthProviders;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor
 @Data
 @Builder
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email")
+})
 public class Users {
     @Id
 //    @Column(name = "id", nullable = false, updatable = false)
@@ -29,9 +32,17 @@ public class Users {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AuthProviders authProviders;
+
+    private String providerId;
+
+    private String imageUrl;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

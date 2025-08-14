@@ -1,19 +1,13 @@
-package com.ujjwal.cafelina_alpha.security;
+package com.ujjwal.cafelina_alpha.security.services;
 
 import com.ujjwal.cafelina_alpha.domain.entities.Users;
 import com.ujjwal.cafelina_alpha.repository.UserRepository;
+import com.ujjwal.cafelina_alpha.security.entities.UserPrincipal;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-
-
-import java.util.Collections;
-import java.util.Optional;
 
 @Service
 @Transactional

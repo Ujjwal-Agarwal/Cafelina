@@ -1,42 +1,31 @@
-package com.ujjwal.cafelina_alpha.security;
+package com.ujjwal.cafelina_alpha.security.configuration;
 
-import com.ujjwal.cafelina_alpha.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ujjwal.cafelina_alpha.security.CustomJwtAuthenticationConverter;
+import com.ujjwal.cafelina_alpha.security.JWTAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-@Component
+@Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig{
-//    @Autowired
+    // Injection handled by Required Args constructer
     private final CustomJwtAuthenticationConverter jwtAuthenticationConverter;
-//    @Autowired
     private final JWTAuthenticationFilter jwtAuthFilter;
-
-    public SecurityConfig(JWTAuthenticationFilter jwtAuthFilter, CustomJwtAuthenticationConverter jwtAuthenticationConverter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
-    }
-
-    @Bean
-    public PasswordEncoder getPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final OAuth2LoginConfig oauth2LoginConfig;
 
     @Bean
     public AuthenticationManager authenticationManager(
@@ -46,7 +35,9 @@ public class SecurityConfig{
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           CorsConfigurationSource corsConfigurationSource
+                                           ) throws Exception {
         http.csrf(csrf->csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers("/api/auth/**"))
@@ -60,7 +51,9 @@ public class SecurityConfig{
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class)
-                .cors(c-> c.configurationSource(corsConfigurationSource));
+                .cors(c-> c.configurationSource(corsConfigurationSource))
+                .oauth2Login(oauth2LoginConfig::configure);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
