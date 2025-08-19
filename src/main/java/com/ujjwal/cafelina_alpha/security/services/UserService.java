@@ -32,6 +32,7 @@ public class UserService {
                     newUser.setEmail(email);
                     newUser.setUsername(name);
                     newUser.setAuthProviders(AuthProviders.GOOGLE);
+                    newUser.setIsEmailVerified(true);
                     Roles userRole = roleRepository.findByRoleName(RoleList.USER)
                             .orElseThrow(()-> new RuntimeException("User Role not Set"));
                     newUser.setRoles(Collections.singletonList(userRole));

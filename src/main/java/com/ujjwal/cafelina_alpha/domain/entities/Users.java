@@ -47,6 +47,9 @@ public class Users {
     @Column(nullable = false)
     private Boolean isEmailVerified = false;
 
+    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY,cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private EmailVerificationToken emailVerificationToken;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Roles> roles = ConcurrentHashMap.newKeySet();
@@ -64,10 +67,14 @@ public class Users {
 
     public void setRoles(List<Roles> list){
         if(this.roles == null){this.roles = ConcurrentHashMap.newKeySet();}
-        if(list.isEmpty()){ return; }
-        final Object rolesLock = new Object();
-        synchronized (rolesLock) {
-            this.roles.add(list.getFirst());
+        if(!list.isEmpty()){
+            this.roles.addAll(list);
+        }
+    }
+    public void setEmailVerificationToken(EmailVerificationToken emailVerificationToken){
+        this.emailVerificationToken = emailVerificationToken;
+        if(emailVerificationToken != null){
+            emailVerificationToken.setUser(this);
         }
     }
 }

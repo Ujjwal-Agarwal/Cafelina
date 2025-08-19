@@ -22,17 +22,19 @@ public class UserPrincipal implements UserDetails, OAuth2User {
     private String password;
     private String email;
     private String imageUrl;
+    private Boolean isEmailVerified;
     private Collection<? extends GrantedAuthority> authorities;
     private Map<String, Object> attributes;
 
     public UserPrincipal(UUID id, String email, String password, String name,
-                         String imageUrl, Collection<? extends GrantedAuthority> authorities) {
+                         String imageUrl, Collection<? extends GrantedAuthority> authorities,Boolean isEmailVerified) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.username = name;
         this.imageUrl = imageUrl;
         this.authorities = authorities;
+        this.isEmailVerified = isEmailVerified;
     }
 
     // Static helps create Object directly without needing another User instance
@@ -47,7 +49,8 @@ public class UserPrincipal implements UserDetails, OAuth2User {
                 user.getPasswordHash(),
                 user.getUsername(),
                 user.getImageUrl(),
-                authorities
+                authorities,
+                user.getIsEmailVerified()
         );
     }
 
