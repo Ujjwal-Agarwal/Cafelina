@@ -138,7 +138,7 @@ public class EmailVerificationService {
                 .findByTokenHash(verificationToken);
         log.debug("Token: {}", tokenOpt.get().getTokenHash());
         if (tokenOpt.isEmpty()) {
-            log.debug("No token found with hash: '{}'", verificationToken);
+//            log.debug("No token found with hash: '{}'", verificationToken);
             throw new InvalidEmailTokenException("Invalid verification token");
         }
         EmailVerificationToken token = tokenOpt.get();
